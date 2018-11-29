@@ -1,16 +1,16 @@
-==============
-exiobase_v3.3x
-==============
+=========
+pySUTtoIO
+=========
 
 
-.. image:: https://img.shields.io/pypi/v/pyEXIO_SUTtoIO.svg
-        :target: https://pypi.python.org/pypi/pyEXIO_SUTtoIO
+.. image:: https://img.shields.io/pypi/v/pySUTtoIO.svg
+        :target: https://pypi.python.org/pypi/pySUTtoIO
 
-.. image:: https://img.shields.io/travis/FDonati/pyEXIO_SUTtoIO.svg
-        :target: https://travis-ci.org/FDonati/pyEXIO_SUTtoIO
+.. image:: https://img.shields.io/travis/FDonati/pySUTtoIO.svg
+        :target: https://travis-ci.org/FDonati/pySUTtoIO
 
-.. image:: https://readthedocs.org/projects/pyEXIO-SUTtoIO/badge/?version=latest
-        :target: https://pyEXIO-SUTtoIO.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/pySUTtoIO/badge/?version=latest
+        :target: https://pySUTtoIO.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
 
@@ -20,7 +20,7 @@ Package to generate IO tables from exiobase SUTs as well as allowing for changes
 
 
 * Free software: MIT license
-* Documentation: https://pyEXIO-SUTtoIO.readthedocs.io.
+* Documentation: https://pySUTtoIO.readthedocs.io.
 
 
 Features
