@@ -1,59 +1,149 @@
 import numpy as np
 
 
-def inverse(matrix):
-    assert type(matrix) is np.ndarray
-    assert matrix.dtype == np.float64
-    assert matrix.ndim == 2
-    (row_cnt, col_cnt) = matrix.shape
-    assert col_cnt == row_cnt
-    (empty_row, empty_col) = _detect_empty(matrix)
-    reduced_matrix = _remove_empty(matrix, empty_row, empty_col)
-    inverse_reduced_matrix = np.linalg.inv(reduced_matrix)
-    inverse_full_matrix = _insert_empty(inverse_reduced_matrix, empty_row, empty_col)
-    return inverse_full_matrix
+class Sut:
+    """A data transfer object that contains data from one supply-use table."""
 
+    _va_index = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
-def _insert_empty(reduced_matrix, empty_row, empty_col):
-    # setting columns in correct position
-    (reduced_row_cnt, reduced_col_cnt) = reduced_matrix.shape
-    row_reduced_matrix = np.zeros((reduced_row_cnt, empty_col.size))
-    reduced_col_idx = 0
-    full_col_idx = 0
-    for empty in empty_col:
-        if not empty:
-            row_reduced_matrix[:, full_col_idx] = reduced_matrix[:, reduced_col_idx]
-            reduced_col_idx = reduced_col_idx + 1
-        full_col_idx = full_col_idx + 1
+    def __init__(self):
+        self._year = None
+        self._supply = None
+        self._use = None
+        self._final_use = None
+        self._factor_inputs = None
+        self._extensions = None
+        self._product_categories = None
+        self._industry_categories = None
+        self._finaluse_categories = None
+        self._factor_input_categories = None
+        self._extension_categories = None
 
-    # setting rows in correct position
-    full_matrix = np.zeros((empty_row.size, empty_col.size))
-    reduced_row_idx = 0
-    full_row_idx = 0
-    for empty in empty_row:
-        if not empty:
-            full_matrix[full_row_idx, :] = row_reduced_matrix[reduced_row_idx, :]
-            reduced_row_idx = reduced_row_idx + 1
-        full_row_idx = full_row_idx + 1
+    @property
+    def product_categories(self):
+        return self._product_categories
 
-    return full_matrix
+    @property
+    def industry_categories(self):
+        return self._industry_categories
 
+    @property
+    def finaluse_categories(self):
+        return self._finaluse_categories
 
-def _remove_empty(matrix, empty_row, empty_col):
-    row_reduced_matrix = matrix[~np.array(empty_row)]
-    reduced_matrix = row_reduced_matrix[:, ~np.array(empty_col)]
-    return reduced_matrix
+    @property
+    def factor_input_categories(self):
+        return self._factor_input_categories
 
+    @property
+    def extension_categories(self):
+        return self._extension_categories
 
-def _detect_empty(matrix):
-    # detect rows and columns completely filled with zeros
-    empty_cols = np.all(matrix == 0, axis=0)
-    empty_rows = np.all(matrix == 0, axis=1)
+    @product_categories.setter
+    def product_categories(self, categories):
+        assert type(categories) is list
+        self._product_categories = categories
 
-    # check if number of empty rows matches number of empty colums
-    empty_cols_cnt = np.count_nonzero(empty_cols)
-    empty_rows_cnt = np.count_nonzero(empty_rows)
-    assert empty_cols_cnt == empty_rows_cnt
+    @industry_categories.setter
+    def industry_categories(self, categories):
+        assert type(categories) is list
+        self._industry_categories = categories
 
-    # return the boolean arrays
-    return empty_rows, empty_cols
+    @finaluse_categories.setter
+    def finaluse_categories(self, categories):
+        assert type(categories) is list
+        self._finaluse_categories = categories
+
+    @factor_input_categories.setter
+    def factor_input_categories(self, categories):
+        assert type(categories) is list
+        self._factor_input_categories = categories
+
+    @extension_categories.setter
+    def extension_categories(self, categories):
+        assert type(categories) is list
+        self._extension_categories = categories
+
+    @property
+    def year(self):
+        return self._year
+
+    @year.setter
+    def year(self, yr):
+        assert type(yr) is int
+        self._year = yr
+
+    @property
+    def supply(self):
+        return self._supply
+
+    @supply.setter
+    def supply(self, sup):
+        assert type(sup) is np.ndarray
+        assert sup.ndim == 2
+        assert sup.dtype == np.float64
+        self._supply = sup
+
+    @property
+    def use(self):
+        return self._use
+
+    @use.setter
+    def use(self, use):
+        assert type(use) is np.ndarray
+        assert use.ndim == 2
+        assert use.dtype == np.float64
+        self._use = use
+
+    @property
+    def final_use(self):
+        return self._final_use
+
+    @final_use.setter
+    def final_use(self, final_use):
+        assert type(final_use) is np.ndarray
+        assert final_use.ndim == 2
+        assert final_use.dtype == np.float64
+        self._final_use = final_use
+
+    @property
+    def factor_inputs(self):
+        return self._factor_inputs
+
+    @factor_inputs.setter
+    def factor_inputs(self, factor_inputs):
+        assert type(factor_inputs) is np.ndarray
+        assert factor_inputs.ndim == 2
+        assert factor_inputs.dtype == np.float64
+        self._factor_inputs = factor_inputs
+
+    @property
+    def extensions(self):
+        return self._extensions
+
+    @extensions.setter
+    def extensions(self, extensions):
+        assert type(extensions) is np.ndarray
+        assert extensions.ndim == 2
+        assert extensions.dtype == np.float64
+        self._extensions = extensions
+
+    @property
+    def value_added(self):
+        return self._factor_inputs[self._va_index, :]
+
+    @property
+    def total_product_use(self):
+        return np.sum(self._use, axis=1) + np.sum(self._final_use, axis=1)
+
+    @property
+    def total_product_supply(self):
+        return np.sum(self._supply, axis=1)
+
+    @property
+    def total_industry_output(self):
+        return np.sum(self._supply, axis=0)
+
+    @property
+    def total_industry_input(self):
+        return np.sum(self._use, axis=0) + np.sum(self.value_added, axis=0)
