@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=pyEXIO_SUTtoIO
+set SPHINXPROJ=pySUTtoIO
 
 if "%1" == "" goto help
 

@@ -139,7 +139,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pyEXIO_SUTtoIO',
+    (master_doc, 'pySUTtoIO',
      u'pySUTtoIO Documentation',
      [author], 1)
 ]
@@ -158,6 +158,3 @@ texinfo_documents = [
      'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-

@@ -5,3 +5,5 @@
 __author__ = """Franco Donati"""
 __email__ = 'f.donati@cml.leidenuniv.nl'
 __version__ = '0.1.0'
+
+from pySUTtoIO.pySUTtoIO import *
