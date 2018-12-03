@@ -1,25 +1,24 @@
 import numpy as np
 import os.path
-import sut as st
-import transformation_model_b as mb
+import pySUTtoIO.sut as st
+import pySUTtoIO.transformation_model_b as mb
 
 
-def main():
+def main(data_dir, model):
+
     # SETTINGS
-    clean_data_dir = '../data/clean/msut/'
-    auxil_data_dir = '../data/auxil/'
-    use_filename = 'U.npy'
-    supply_filename = 'V.npy'
-    finaldemands_filename = 'Y.npy'
-    factorinputs_filename = 'W.npy'
-    extensions_filename = 'M.npy'
+    use_filename = "U.npy"
+    supply_filename = "V.npy"
+    finaldemands_filename = "Y.npy"
+    factorinputs_filename = "W.npy"
+    extensions_filename = "Me.npy"
 
     # CREATE CANONICAL FILENAMES
-    full_use_fn = os.path.join(clean_data_dir, use_filename)
-    full_supply_fn = os.path.join(clean_data_dir, supply_filename)
-    full_finaldemands_fn = os.path.join(clean_data_dir, finaldemands_filename)
-    full_factor_inputs_fn = os.path.join(clean_data_dir, factorinputs_filename)
-    full_extensions_fn = os.path.join(clean_data_dir, extensions_filename)
+    full_use_fn = os.path.join(data_dir, use_filename)
+    full_supply_fn = os.path.join(data_dir, supply_filename)
+    full_finaldemands_fn = os.path.join(data_dir, finaldemands_filename)
+    full_factor_inputs_fn = os.path.join(data_dir, factorinputs_filename)
+    full_extensions_fn = os.path.join(data_dir, extensions_filename)
 
     # LOAD FILES AND CREATE SUT DATA TRANSFER OBJECT
     sut = st.Sut()
@@ -30,7 +29,7 @@ def main():
     sut.extensions = np.load(full_extensions_fn)
 
     # CREATE PXP-ITA IOT
-    md_b = mb.TransformationModelB(sut)
+    md_b = mb.TransformationModelB(sut, True)
     model_b = md_b.io_coefficient_matrix()
 
 
@@ -44,5 +43,9 @@ def main():
     if not md_b.check_ext_coefficient_matrix():
         print('Model B extension coefficients matrix not correct')
 
-
-main()
+years = range(2010, 2012)
+clean_data_dir = "data\\clean\\msut"
+for yr in years:
+    yr_string = str(yr)
+    data_dir = os.path.join(clean_data_dir, yr_string)
+    main(data_dir, model=None)

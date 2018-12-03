@@ -2,6 +2,7 @@ import math
 import numpy as np
 import pySUTtoIO.tools as tl
 import pySUTtoIO.sut as st
+from pySUTtoIO.secondary_flows import make_secondary
 
 
 class TransformationModelB:
@@ -14,9 +15,12 @@ class TransformationModelB:
 
     default_rel_tol = 1E-3
 
-    def __init__(self, sut):
+    def __init__(self, sut, make_seconary=False):
         assert type(sut) is st.Sut
-        self._sut = sut
+        if make_secondary is True:
+            self._sut = make_secondary(sut)
+        else:
+            self._sut = sut
 
     def transformation_matrix(self):
         make = np.transpose(self._sut.supply)

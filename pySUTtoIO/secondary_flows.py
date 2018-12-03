@@ -51,7 +51,7 @@ def make_secondary(data):
     """
     V = data.supply
     U = data.use
-    Y = data.final_demand
+    Y = data.final_use
 
     products = np.array([57, 59, 85, 96, 100, 103,
                          105, 107, 109, 111, 113, 149])

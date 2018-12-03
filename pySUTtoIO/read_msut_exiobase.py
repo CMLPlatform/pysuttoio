@@ -18,15 +18,15 @@
 ###############################################################################
 import os.path
 import numpy as np
-import tools as tl
+import pySUTtoIO.tools as tl
 
 
 def main():
 
     # 1. SETUP
-    years = range(1995, 2012)
-    raw_data_dir = os.path.join('..', 'data', 'raw')
-    clean_data_dir = os.path.join('..', 'data', 'clean')
+    years = range(2010, 2012)
+    raw_data_dir = os.path.join("data", "raw")
+    clean_data_dir = os.path.join("data", "clean", "msut")
     value_added_index = [0, 1, 2, 3, 4, 5, 6, 7, 8]
     prd_cnt = 200
     ind_cnt = 163
