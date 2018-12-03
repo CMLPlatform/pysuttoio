@@ -12,22 +12,21 @@ class TransformationModel0:
         assert type(sut) is st.Sut
         self._sut = sut
         self._ext = env_extensions
-   
-    def V_U_with_secondary(self, supply, use, final_demand)
+
+    def V_U_with_secondary(self, supply, use, final_demand):
         sut = make_secondary(self._sut)
-        
-        return sut 
-		
+        return sut
+
     def io_matrix_model_0(self, make_secondary):
-        if make_secondary is False:
+        if make_secondary is True:
             intermediate_use = self.V_U_with_secondary.use
             intermediate_supply = self.V_U_with_secondary.supply
-        else:
+        elif make_secondary is False:
             intermediate_use = self._sut.domestic_use
-            intermediate_supply = self._sut.supply 
-        
+            intermediate_supply = self._sut.supply
+
         net_supply = self._sut.supply - intermediate_use
-            
+
         return net_supply
 
     def ext_transaction_matrix(self):

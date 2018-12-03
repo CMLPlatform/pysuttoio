@@ -11,32 +11,85 @@ Scope: RaMa-SCENE - Raw Materials SCENario Efficiency improvements
 @institution:Leiden University CML
 """
 import numpy as np
-from labels import positions 
+from labels import positions
 
 
 def make_secondary(data):
     """
     This allows to allign secondary flow in such a way that they then
     appear in the IOT
+
+    Primary Products' positions
+
+    C_WOOD: 57
+    C_PULP: 59
+    C_PLAS: 85
+    C_GLAS: 96
+    C_CMNT: 100
+    C_STEL: 103
+    C_PREM: 105
+    C_ALUM: 107
+    C_LZTP: 109
+    C_COPP: 111
+    C_ONFM: 113
+    C_CONS: 149
+
+    Primary Sectors'positions:
+
+    A_WOOD: 49
+    A_PULP: 51
+    A_PLAS: 58
+    A_GLAS: 64
+    A_CMNT: 68
+    A_STEL: 71
+    A_PREM: 73
+    A_ALUM: 75
+    A_LZTP: 77
+    A_COPP: 79
+    A_ONFM: 81
+    A_CONS: 112
+
     """
     V = data.supply
     U = data.use
     Y = data.final_demand
 
-    materials = ["_WOOD", "_PULP", "_PLAS", "_GLAS", "_CMNT", "_STEL",
-                 "_PREM", "_ALUM", "_LZTP", "_COPP", "_ONFM", "_CONS"]
+    products = np.array([57, 59, 85, 96, 100, 103,
+                         105, 107, 109, 111, 113, 149])
 
-    for l in materials:
-        prod_or = "C" + l
-        ind_or = "A" + l
-        moved = allocate_sec_mat(V, U, Y, prod_or, ind_or)
-        V = moved["V"]
-        U = moved["U"]
+    industries = np.array([49, 51, 58, 64, 68, 71, 73, 75, 77, 79, 81, 112])
+
+    no_countries = int(len(Y)/200)
+
+    prod_or = make_coord_array(products, no_countries, 200)
+    ind_or = make_coord_array(industries, no_countries, 163)
+
+    moved = allocate_sec_mat(V, U, Y, prod_or, ind_or)
+
+    V = moved["V"]
+    U = moved["U"]
 
     data["V"] = V
     data["U"] = U
 
     return(data)
+
+
+def make_coord_array(coordinates, no_countries, no_ind_or_prod):
+
+    n = 0
+    nn = 0
+    while n in range(len(coordinates)):
+        while nn in range(no_countries):
+            g = coordinates + no_ind_or_prod*nn
+            if "s" not in locals():
+                s = g
+            else:
+                s = np.concatenate([s, g])
+            nn = nn+1
+        n = n+1
+
+    return(s)
 
 
 def allocate_sec_mat(V, U, Y, prod_or, ind_or):
