@@ -1,8 +1,9 @@
 import numpy as np
 import math
-import sut as st
-import matrix_inverter as mi
-from secondary_flows import make_secondary
+import pySUTtoIO.sut as st
+import pySUTtoIO.matrix_inverter as mi
+from pySUTtoIO.secondary_flows import make_secondary
+
 
 class TransformationModel0:
 
@@ -25,7 +26,7 @@ class TransformationModel0:
             intermediate_use = self._sut.domestic_use
             intermediate_supply = self._sut.supply
 
-        net_supply = self._sut.supply - intermediate_use
+        net_supply = intermediate_supply - intermediate_use
 
         return net_supply
 
@@ -39,13 +40,14 @@ class TransformationModel0:
 
     def check_io_matrix(self, rel_tol=default_rel_tol):
         is_correct = True
-        # in this case a scaling vector is calculated. If the net-supply matrix is correct
-        # it would contains 1s (or zero if product is absent)
+        # in this case a scaling vector is calculated. If the net-supply matrix
+        # is correct it would contains 1s (or zero if product is absent)
         total_final_use = np.sum(self._sut.domestic_final_use, axis=1)
         s = np.dot(mi.inverse(self.io_matrix_model_0()), total_final_use)
         it = np.nditer(s, flags=['f_index'])
         while not it.finished and is_correct:
-            if not (math.isclose(s[it.index], 1, rel_tol=rel_tol) or math.isclose(s[it.index], 0, rel_tol=rel_tol)):
+            if not (math.isclose(s[it.index], 1, rel_tol=rel_tol) or
+                    math.isclose(s[it.index], 0, rel_tol=rel_tol)):
                 is_correct = False
             it.iternext()
         return is_correct

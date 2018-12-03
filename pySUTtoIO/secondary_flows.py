@@ -11,7 +11,6 @@ Scope: RaMa-SCENE - Raw Materials SCENario Efficiency improvements
 @institution:Leiden University CML
 """
 import numpy as np
-from labels import positions
 
 
 def make_secondary(data):
@@ -57,7 +56,8 @@ def make_secondary(data):
     products = np.array([57, 59, 85, 96, 100, 103,
                          105, 107, 109, 111, 113, 149])
 
-    industries = np.array([49, 51, 58, 64, 68, 71, 73, 75, 77, 79, 81, 112])
+    industries = np.array([49, 51, 58, 64, 68, 71, 73,
+                           75, 77, 79, 81, 112])
 
     no_countries = int(len(Y)/200)
 
@@ -106,44 +106,35 @@ def allocate_sec_mat(V, U, Y, prod_or, ind_or):
     U = U.copy()
     Y = Y.copy()
 
-    index = V.index.to_frame(False)
-    columns = V.columns.to_frame(False)
-
-    reg = None
-
-    # position of the primary material
-    or_prod_ix_pos = positions(index, reg, prod_or)
-    or_ind_col_pos = positions(columns, reg, ind_or)
-
     # position of the secondary material
-    des_prod_ix_pos = or_prod_ix_pos + 1
-    des_ind_col_pos = or_ind_col_pos + 1
+    des_prod_ix_pos = prod_or + 1
+    des_ind_col_pos = ind_or + 1
 
     # getting the value of secondary material from the supply table
     # which is placed on the primary material row
-    misplaced = np.array(V.iloc[or_prod_ix_pos, des_ind_col_pos])
+    misplaced = np.array(V.iloc[prod_or, des_ind_col_pos])
 
     # placing the misplaced value to the secondary material row
     V.iloc[des_prod_ix_pos, des_ind_col_pos] = misplaced
 
     # collecting how much of the primary material is consumed by final demand
     # to be subtracted from the supply value
-    Y_values = np.sum(Y.iloc[or_prod_ix_pos], axis=1)
+    Y_values = np.sum(Y.iloc[prod_or], axis=1)
 
     # how the supply to intraindustry transactions is distributed in its use
-    dist = np.dot(np.diag(1/(np.sum(V.iloc[or_prod_ix_pos], axis=1)-Y_values)),
-                  U.iloc[or_prod_ix_pos])
+    dist = np.dot(np.diag(1/(np.sum(V.iloc[prod_or], axis=1)-Y_values)),
+                  U.iloc[prod_or])
 
     # mapping the use of the secondary material according to the distribution
     # of use of the primary material
     U.iloc[des_prod_ix_pos] = np.diag(misplaced.sum(axis=1)) @ dist
 
     # subtracting the use of secondary material from the primary
-    U.iloc[or_prod_ix_pos] = np.subtract(U.iloc[or_prod_ix_pos],
-                                         np.array(U.iloc[des_prod_ix_pos]))
+    U.iloc[prod_or] = np.subtract(U.iloc[prod_or],
+                                  np.array(U.iloc[des_prod_ix_pos]))
 
     # zeroing the misplaced value of secondary materials
-    V.iloc[or_prod_ix_pos, des_ind_col_pos] = 0
+    V.iloc[prod_or, des_ind_col_pos] = 0
 
     # verifying balance
     g1_over_g2 = (np.sum(V, axis=1) / (np.sum(U, axis=1) +
@@ -154,4 +145,3 @@ def allocate_sec_mat(V, U, Y, prod_or, ind_or):
               "balance": g1_over_g2}
 
     return(output)
-

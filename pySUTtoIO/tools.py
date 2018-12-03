@@ -82,14 +82,14 @@ def list_to_numpy_array(list_data, row_header_cnt, col_header_cnt):
     as two dimensional numpy array.
 
     :param list_data: list
-            The table data, optional including row and column headers, in the form
-            of a list of lists
+            The table data, optional including row and column headers,
+            in the form of a list of lists
     :param row_header_cnt: int
             The number of top rows occupied by the column header labels
     :param col_header_cnt: int
             The first number of columns occopied by the row header labels
     :return: numpy array
-            Two dimensional numpy array containing double floating point values.
+            Two dimensional numpy array containing double floating point values
     """
     matrix = []
     row_idx = 0

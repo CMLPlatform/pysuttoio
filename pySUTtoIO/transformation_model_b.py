@@ -1,10 +1,7 @@
 import math
-
 import numpy as np
-
-import tools as tl
-
-import sut as st
+import pySUTtoIO.tools as tl
+import pySUTtoIO.sut as st
 
 
 class TransformationModelB:
@@ -12,8 +9,8 @@ class TransformationModelB:
     From the supply-use table a product-by-product input-output table
     based on industry technology assumption is created. In the 'Eurostat Manual
     of Supply, Use and Input-Output Tables' this transformation model is called
-    model B. The resulting input-output table does not contain negative values. Only
-    the domestic tables are taken into consideration"""
+    model B. The resulting input-output table does not contain negative values.
+    Onlythe domestic tables are taken into consideration"""
 
     default_rel_tol = 1E-3
 
