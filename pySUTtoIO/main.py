@@ -1,10 +1,11 @@
 import numpy as np
 import os.path
+import glob
 import pySUTtoIO.sut as st
 import pySUTtoIO.transformation_model_b as mb
+from os.path import isfile, join
 
-
-def main(data_dir, model):
+def main(data_dir, model): # added model so that this module can be use as interface to call the specific model types
 
     # SETTINGS
     use_filename = "U.npy"
@@ -30,7 +31,7 @@ def main(data_dir, model):
 
     # CREATE PXP-ITA IOT
     md_b = mb.TransformationModelB(sut, True)
-    model_b = md_b.io_coefficient_matrix()
+    # model_b = md_b.io_coefficient_matrix()
 
 
     # CHECK IO TABLE
@@ -43,9 +44,17 @@ def main(data_dir, model):
     if not md_b.check_ext_coefficient_matrix():
         print('Model B extension coefficients matrix not correct')
 
-years = range(2010, 2012)
-clean_data_dir = "data\\clean\\msut"
-for yr in years:
-    yr_string = str(yr)
-    data_dir = os.path.join(clean_data_dir, yr_string)
-    main(data_dir, model=None)
+    return(md_b)
+
+def launch(or_sut_data_dir, model, save_dir=None):
+    years = glob.glob(os.join(os.path.abspath(or_sut_data_dir),"*/"))
+    for data_dir_yr in years:
+        yr_string = str(data_dir_yr[-5:-1]) # getting the name of the year
+        IO_tables = main(data_dir, model=None)
+    if save_dir != None:
+
+
+
+
+
+or_sut_data_dir = "data\\clean\\msut"
