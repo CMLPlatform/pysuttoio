@@ -35,184 +35,99 @@ import numpy as np
 import os.path
 import csv
 import copy
+import pySUTtoIO.tools as tools
 
 
-def main():
+def main(directory, IO_tables):
 
     # SETTINGS
-    years = range(2010, 2012)
-    raw_data_dir = os.path.join('data', 'raw')
-    clean_data_dir = os.path.join('data', 'clean', 'ramascene')
-    auxilary_data_dir = os.path.join('data', 'auxiliary')
-    iot_filename_stub = 'mrIot_3.3_'
-    finaldemands_filename_stub = 'mrFinalDemand_3.3_'
-    factorinputs_filename_stub = 'mrFactorInputs_3.3_'
-    emissions_filename_stub = 'mrEmissions_3.3_'
-    materials_filename_stub = 'mrMaterials_3.3_'
-    indicators_filename = 'indicators_v3.txt'
-    ghg_index = [0, 1, 2, 27, 28, 29, 52, 53, 54, 55, 56, 57, 58, 59, 77, 78, 403, 404, 405, 406, 407, 410]
+    ghg_index = [0, 1, 2, 27, 28, 29, 52, 53, 54, 55, 56, 57, 58, 59, 77, 78,
+                 403, 404, 405, 406, 407, 410]
     va_index = [0, 1, 2, 3, 4, 5, 6, 7, 8]
     material_index = range(419, 439, 1)
     tolerance = 1E-3
     prd_cnt = 200
     fd_cnt = 7
     cntr_cnt = 49
-    save_files = True
-    include_emission_multiplier_matrices = False  # be sure to have loads of mem if you want to do this
 
-    for yr in years:
+    Z = IO_tables.io_transaction_matrix()
+    Y = IO_tables.final_demand()
+    factor_inputs = IO_tables.factor_inputs_coefficients_matrix()
+    extensions = IO_tables.ext_coefficients_matrix()
+    indicators_dir = os.path.expand("data\\auxiliary\\indicators_v3.txt")
+    indicators = csv.reader(indicators_dir, delimiter='\t')
 
-        yr_string = str(yr)
-        print('Processing raw data for the year {}'.format(yr_string))
+    # CREATE NUMPY ARRAYS
+    W = tools.list_to_numpy_array(factor_inputs)
+    va = np.sum(W[va_index, :], axis=0, keepdims=True)
+    E = tools.list_to_numpy_array(extensions[:417])
+    E = E[ghg_index, :]  # select CO2, CH4 and N2O emissions
+    M = tools.list_to_numpy_array(extensions[418:])
+    M = M[material_index, :]  # "domestic extraction used" metals and minerals
+    o_coeff = np.zeros((1, prd_cnt * cntr_cnt))  # dummy place holder
+    M = np.vstack((o_coeff, W, E, M))  # stack all extensions
+    H = tools.list_to_numpy_array(indicators, 0, 0)
+    M = np.dot(np.transpose(H), M)
 
-        # CREATE CANONICAL FILENAMES
-        iot_filename = iot_filename_stub + yr_string + '.txt'
-        finaldemands_filename = finaldemands_filename_stub + yr_string + '.txt'
-        factorinputs_filename = factorinputs_filename_stub + yr_string + '.txt'
-        emissions_filename = emissions_filename_stub + yr_string + '.txt'
-        materials_filename = materials_filename_stub + yr_string + '.txt'
-        full_iot_fn = os.path.join(raw_data_dir, yr_string, iot_filename)
-        full_finaldemands_fn = os.path.join(raw_data_dir, yr_string, finaldemands_filename)
-        full_factor_inputs_fn = os.path.join(raw_data_dir, yr_string, factorinputs_filename)
-        full_emissions_fn = os.path.join(raw_data_dir, yr_string, emissions_filename)
-        full_materials_fn = os.path.join(raw_data_dir, yr_string, materials_filename)
-        full_indicators_fn = os.path.join(auxilary_data_dir, indicators_filename)
+    # CALCULATE TOTALS
+    to = np.sum(Z, axis=1, keepdims=True) + np.sum(Y, axis=1, keepdims=True)  # total output ($)
+    ti = np.transpose(np.sum(Z, axis=0, keepdims=True) + va)  # total outlays ($)
 
-        # READ FILES
-        iot = read_file(full_iot_fn)
-        final_demands = read_file(full_finaldemands_fn)
-        factor_inputs = read_file(full_factor_inputs_fn)
-        emissions = read_file(full_emissions_fn)
-        materials = read_file(full_materials_fn)
-        indicators = read_file(full_indicators_fn)
+    # CALCULATE COEFFICIENTS
+    A = np.dot(Z, tools.invdiag(to[:, 0]))  # input-output coefficients matrix ($/$)
+    B = np.dot(M, tools.invdiag(to[:, 0]))  # extension coefficients (xx/$)
 
-        # CREATE NUMPY ARRAYS
-        Z = list_to_numpy_array(iot, 3, 2)
-        Y = list_to_numpy_array(final_demands, 3, 2)
-        W = list_to_numpy_array(factor_inputs, 2, 2)
-        va = np.sum(W[va_index, :], axis=0, keepdims=True)
-        E = list_to_numpy_array(emissions, 3, 2)
-        E = E[ghg_index, :]                           # select CO2, CH4 and N2O emissions
-        M = list_to_numpy_array(materials, 2, 2)
-        M = M[material_index, :]                      # select "domestic extraction used" metals and minerals
-        o_coeff = np.zeros((1, prd_cnt * cntr_cnt))   # dummy place holder, will be filled later
-        M = np.vstack((o_coeff, W, E, M))             # stack all extensions
-        H = list_to_numpy_array(indicators, 0, 0)
-        M = np.dot(np.transpose(H), M)
+    # FILL IN TOTAL OUTPUT COEFFICIENTS IN B MATRIX AND REPLACE DUMMY
+    o_coeff = copy.deepcopy(to)
+    o_coeff[o_coeff > 0] = 1
+    B[0, :] = np.transpose(o_coeff)
 
-        # CALCULATE TOTALS
-        to = np.sum(Z, axis=1, keepdims=True) + np.sum(Y, axis=1, keepdims=True)  # total output ($)
-        ti = np.transpose(np.sum(Z, axis=0, keepdims=True) + va)                  # total outlays ($)
+    # LEONTIEF INVERSE
+    I = np.eye(prd_cnt * cntr_cnt)     # unity matrix ($)
+    L = np.linalg.inv(I - A)           # Leontief inverse matrix ($/$)
 
-        # CALCULATE COEFFICIENTS
-        A = np.dot(Z, invdiag(to[:, 0]))   # input-output coefficients matrix ($/$)
-        B = np.dot(M, invdiag(to[:, 0]))   # extension coefficients (xx/$)
+    # CHECK
+    # balanced to start with ?
+    diff = np.abs(to - ti)
+    for index in np.ndindex(diff.shape):
+        if diff[index] > tolerance:
+            print('difference to and ti larger than {} million Euro. Difference is {} at index {}.'
+                  .format(tolerance, diff[index], index))
 
-        # FILL IN TOTAL OUTPUT COEFFICIENTS IN B MATRIX AND REPLACE DUMMY
-        o_coeff = copy.deepcopy(to)
-        o_coeff[o_coeff>0] = 1
-        B[0, :] = np.transpose(o_coeff)
+    # calculated total output equal to to initial total output
+    x = np.dot(L, np.sum(Y, axis=1, keepdims=True))
+    diff = np.abs(x - to)
+    for index in np.ndindex(diff.shape):
+        if diff[index] > tolerance:
+            print('difference x and to larger than {} million Euro. Difference is {} at index {}.'
+                  .format(tolerance, diff[index], index))
 
-        # LEONTIEF INVERSE
-        I = np.eye(prd_cnt * cntr_cnt)     # unity matrix ($)
-        L = np.linalg.inv(I - A)           # Leontief inverse matrix ($/$)
+    # AGGREGATE FINALDEMAND
+    Y_new = np.zeros([9800, 49])
+    for cntr_idx in range(0, cntr_cnt):
+        for fd_idx in range(0, fd_cnt):
+            old_idx = cntr_idx * fd_cnt + fd_idx
+            new_idx = cntr_idx
+            Y_new[:, new_idx] = Y_new[:, new_idx] + Y[:, old_idx]
+    Y = Y_new
 
-        # CALCULATE EMISSION MULTIPLIERS
-        if include_emission_multiplier_matrices:
-            Q = np.dot(B, L)               # multipliers (xx/$)
+    # SOME DELETING
+    del Z
+    del W
+    del va
+    del E
+    del IO_tables
+    del factor_inputs
+    del extensions
 
-        # CHECK
-        # balanced to start with ?
-        diff = np.abs(to - ti)
-        for index in np.ndindex(diff.shape):
-            if diff[index] > tolerance:
-                print('difference to and ti larger than {} million Euro. Difference is {} at index {}.'
-                      .format(tolerance, diff[index], index))
+    # CREATE CANONICAL FILENAMES
+    full_io_fn = os.path.join(directory, 'A_v4.npy')
+    full_leontief_fn = os.path.join(directory, 'L_v4npy')
+    full_finaldemand_fn = os.path.join(directory, 'Y_v4.npy')
+    full_extensions_fn = os.path.join(directory, 'B_v4.npy')
 
-        # calculated total output equal to to initial total output
-        x = np.dot(L, np.sum(Y, axis=1, keepdims=True))
-        diff = np.abs(x - to)
-        for index in np.ndindex(diff.shape):
-            if diff[index] > tolerance:
-                print('difference x and to larger than {} million Euro. Difference is {} at index {}.'
-                      .format(tolerance, diff[index], index))
-
-        # AGGREGATE FINALDEMAND
-        Y_new = np.zeros([9800, 49])
-        for cntr_idx in range(0, cntr_cnt):
-            for fd_idx in range(0, fd_cnt):
-                old_idx = cntr_idx * fd_cnt + fd_idx
-                new_idx = cntr_idx
-                Y_new[:, new_idx] = Y_new[:, new_idx] + Y[:, old_idx]
-        Y = Y_new
-
-        # SOME DELETING
-        del Z
-        del W
-        del va
-        del E
-        del iot
-        del final_demands
-        del factor_inputs
-        del emissions
-        del materials
-
-        # CREATE DETAILED MULTIPLIERS MATRIX
-        if include_emission_multiplier_matrices:
-            ext_cnt = np.size(B, 0)
-            P = np.zeros((prd_cnt * cntr_cnt, prd_cnt * cntr_cnt, ext_cnt + 1))
-            P[:, :, ext_cnt] = L   # add total requirements matrix at the end
-            for ext_idx in range(0, ext_cnt):
-                b = B[ext_idx, :]     # take out a single extension from extension coefficients matrix
-                b = np.transpose(b)   # transpose
-                P[:, :, ext_idx] = L
-                for prd_idx in range(0, prd_cnt * cntr_cnt):
-                    P[:, prd_idx, ext_idx] = np.multiply(b, P[:, prd_idx, ext_idx])
-
-        # CREATE CANONICAL FILENAMES
-        full_io_fn = os.path.join(clean_data_dir, yr_string, 'A_v3.npy')
-        full_leontief_fn = os.path.join(clean_data_dir, yr_string, 'L_v3.npy')
-        full_finaldemand_fn = os.path.join(clean_data_dir, yr_string, 'Y_v3.npy')
-        full_extensions_fn = os.path.join(clean_data_dir, yr_string, 'B_v3.npy')
-        if include_emission_multiplier_matrices:
-            full_multipliers_fn = os.path.join(clean_data_dir, yr_string, 'Q_v3.npy')
-            full_detailed_multipliers_fn = os.path.join(clean_data_dir, yr_string, 'P_v3.npy')
-
-        # SAVING MULTIREGIONAL DATA AS BINARY NUMPY ARRAY OBJECTS
-        if save_files:
-            np.save(full_io_fn, A)
-            np.save(full_leontief_fn, L)
-            np.save(full_finaldemand_fn, Y)
-            np.save(full_extensions_fn, B)
-            if include_emission_multiplier_matrices:
-                np.save(full_multipliers_fn, Q)
-                np.save(full_detailed_multipliers_fn, P)
-
-
-def invdiag(data):
-    result = np.zeros(data.shape)
-    for index in np.ndindex(data.shape):
-        if data[index] != 0:
-            result[index] = 1 / data[index]
-    return np.diag(result)
-
-
-def list_to_numpy_array(list_data, row_header_cnt, col_header_cnt):
-    matrix = []
-    row_idx = 0
-    for list_row in list_data:
-        if row_idx >= col_header_cnt:   # skip rows with column headers
-            matrix.append(list_row[row_header_cnt:len(list_row)])
-        row_idx += 1
-    return np.asarray(matrix, dtype=np.double)
-
-
-def read_file(filename):
-    with open(filename) as f:
-        reader = csv.reader(f, delimiter='\t')
-        d = list(reader)
-    return d
-
-
-main()
-
+    # SAVING MULTIREGIONAL DATA AS BINARY NUMPY ARRAY OBJECTS
+    np.save(full_io_fn, A)
+    np.save(full_leontief_fn, L)
+    np.save(full_finaldemand_fn, Y)
+    np.save(full_extensions_fn, B)

@@ -39,9 +39,6 @@ def main(data_dir, model, make_secondary, project):
     md_b = mb.TransformationModelB(sut, True)
     # model_b = md_b.io_coefficient_matrix()
 
-    if project == 1:
-
-
     # CHECK IO TABLE
     if not md_b.check_io_transaction_matrix():
         print('Model B transaction matrix not correct')
@@ -78,25 +75,28 @@ def launch(or_sut_data_dir, model, save_dir, make_secondary, project=0):
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        IO_tables = main(data_dir_yr, model, make_secondary, project)
-
         # This is a quick fix. This is data only needed for RaMa-SCENE
         # please update script to output everything
         A_file_name = os.path.join(directory, 'A.npy')
         L_file_name = os.path.join(directory, 'L.npy')
         Y_file_name = os.path.join(directory, 'Y.npy')
         B_file_name = os.path.join(directory, 'B.npy')
+        W_file_name = os.path.join(directory, 'W.npy')
 
-        # 11. SAVING MULTIREGIONAL DATA AS BINARY NUMPY ARRAY OBJECTS
-        np.save(A_file_name, IO_tables.io_coefficient_matrix)
-        np.save(L_file_name, IO_tables.io_total_requirement_matrix)
-        np.save(Y_file_name, IO_tables.final_demand)
-        np.save(B_file_name, IO_tables.ext_coefficients_matrix)
+        IO_tables = main(data_dir_yr, model, make_secondary, project)
+        # 11. SAVING MULTIREGIONAL DATA AS BINARY NUMPY ARRAY OBJECT
+        if project == 0:
+            np.save(A_file_name, IO_tables.io_coefficient_matrix())
+            np.save(L_file_name, IO_tables.io_total_requirement_matrix())
+            np.save(Y_file_name, IO_tables.final_demand())
+            np.save(B_file_name, IO_tables.ext_coefficients_matrix())
+            np.save(W_file_name, IO_tables.factor_inputs_coefficients_matrix())
+        elif project ==1:
+            ramascene = rama(IO_tables)
+
 
 
 if __name__ == "__main__":
     # or_sut_data_dir = input("Dataset location:\n")
     or_sut_data_dir = "data\\clean\\msut"
-    model = input("Transformation model:\n")
-    save_dir = input("Saving directory:\n")
-    launch(or_sut_data_dir, model, save_dir, make_secondary)
+    launch(or_sut_data_dir, model, save_dir, make_secondary, project)

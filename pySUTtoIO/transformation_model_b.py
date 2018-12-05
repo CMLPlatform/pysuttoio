@@ -50,6 +50,13 @@ class TransformationModelB:
         q = self._sut.total_product_supply
         return np.dot(self.ext_transaction_matrix(), tl.invdiag(q))
 
+    def factor_inputs_transaction_matrix(self):
+        return np.dot(self._sut.factor_inputs, self.transformation_matrix())
+
+    def factor_inputs_coefficients_matrix(self):
+        q = self._sut.total_product_supply
+        return np.dot(self.factor_inputs_transaction_matrix(), tl.invdiag(q))
+
     def final_demand(self, fd=None):
         if fd is None:
             fd = self._sut.final_use
