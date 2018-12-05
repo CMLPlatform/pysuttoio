@@ -87,6 +87,7 @@ def main():
         mm_dir = tl.list_to_numpy_array(direct_materials, 2, 2)
         mr = tl.list_to_numpy_array(resources, 3, 2)
         mr_dir = tl.list_to_numpy_array(direct_resources, 3, 2)
+        m = np.concatenate([me, mr, mm])
 
         # 6. CREATE SEARCH LISTS
         product_labels = tl.get_row_header(final_demands, 3, 2)

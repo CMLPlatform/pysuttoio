@@ -55,14 +55,17 @@ class TransformationModelB:
             fd = self._sut.final_use
         return fd
 
+    def io_total_requirement_matrix(self):
+        A = self.io_coefficient_matrix()
+        identity = np.identity(len(A))
+        return np.linalg.inv(identity - A)
+
     def check_io_transaction_matrix(self, rel_tol=default_rel_tol):
         is_correct = True
         q1 = np.sum(self.io_transaction_matrix(), axis=1) + \
             np.sum(self._sut.final_use, axis=1)
-        print(len(q1), q1)
         q2 = np.sum(self.U, axis=1) + \
             np.sum(self._sut.final_use, axis=1)
-        print(len(q2), q2)
         it = np.nditer(q1, flags=['f_index'])
         while not it.finished and is_correct:
             if not math.isclose(q1[it.index], q2[it.index], rel_tol=rel_tol):
@@ -74,13 +77,11 @@ class TransformationModelB:
         is_correct = True
         q1 = np.sum(self.io_transaction_matrix(), axis=1) + \
             np.sum(self._sut.final_use, axis=1)
-        print(len(q1), q1)
         (row_cnt, col_cnt) = self.U.shape
         eye = np.diag(np.ones(row_cnt))
         l_inverse = np.linalg.inv(eye - self.io_coefficient_matrix())
         fd = np.sum(self._sut.final_use, axis=1)
         q2 = np.dot(l_inverse, fd)
-        print(len(q2), q2)
         it = np.nditer(q1, flags=['f_index'])
         while not it.finished and is_correct:
             if not math.isclose(q1[it.index], q2[it.index], rel_tol=rel_tol):
@@ -92,8 +93,6 @@ class TransformationModelB:
         is_correct = True
         e1 = np.sum(self._sut.extensions, axis=1)
         e2 = np.sum(self.ext_transaction_matrix(), axis=1)
-        print(len(e1), e1)
-        print(len(e2), e2)
         it = np.nditer(e1, flags=['f_index'])
         while not it.finished and is_correct:
             if not math.isclose(e1[it.index], e2[it.index], rel_tol=rel_tol):
