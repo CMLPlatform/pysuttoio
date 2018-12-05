@@ -18,7 +18,7 @@
 ###############################################################################
 import os.path
 import numpy as np
-import pySUTtoIO.tools as tl
+import tools as tl
 
 
 def main():
@@ -87,7 +87,7 @@ def main():
         mm_dir = tl.list_to_numpy_array(direct_materials, 2, 2)
         mr = tl.list_to_numpy_array(resources, 3, 2)
         mr_dir = tl.list_to_numpy_array(direct_resources, 3, 2)
-        m = np.concatenate([me, mr, mm])
+        m = np.concatenate([me, mm, mr], axis=0)
 
         # 6. CREATE SEARCH LISTS
         product_labels = tl.get_row_header(final_demands, 3, 2)
@@ -97,6 +97,7 @@ def main():
         emission_labels = tl.get_row_header(direct_emissions, 3, 2)
         resource_labels = tl.get_row_header(direct_resources, 3, 2)
         material_labels = tl.get_row_header(direct_materials, 2, 2)
+        extensions_labels = emission_labels + resource_labels + material_labels
 
         # 7. CALCULATE TOTALS
         # total value added
@@ -147,6 +148,8 @@ def main():
         full_resources_fn = os.path.join(clean_data_dir, yr_string, 'Mr.npy')
         full_direct_resources_fn = os.path.join(clean_data_dir, yr_string, 'Mr_dir.npy')
 
+        full_extensions_fn = os.path.join(clean_data_dir, yr_string, 'M.npy')
+
         full_product_labels_fn = os.path.join(clean_data_dir, yr_string, 'products.pck')
         full_industries_labels_fn = os.path.join(clean_data_dir, yr_string, 'industries.pck')
         full_finaluses_labels_fn = os.path.join(clean_data_dir, yr_string, 'finaluses.pck')
@@ -154,6 +157,8 @@ def main():
         full_emission_labels_fn = os.path.join(clean_data_dir, yr_string, 'emissions.pck')
         full_resource_labels_fn = os.path.join(clean_data_dir, yr_string, 'resources.pck')
         full_material_labels_fn = os.path.join(clean_data_dir, yr_string, 'materials.pck')
+
+        full_extensions_labels_fn = os.path.join(clean_data_dir, yr_string, 'extensions.pck')
 
         full_prd_unbalance_fn = os.path.join(clean_data_dir, yr_string, 'prd_unbalances.txt')
         full_ind_unbalance_fn = os.path.join(clean_data_dir, yr_string, 'ind_unbalances.txt')
@@ -170,6 +175,8 @@ def main():
         np.save(full_resources_fn, mr)
         np.save(full_direct_resources_fn, mr_dir)
 
+        np.save(full_extensions_fn, m)
+
         tl.list_to_pickle_file(full_product_labels_fn, product_labels)
         tl.list_to_pickle_file(full_industries_labels_fn, industry_labels)
         tl.list_to_pickle_file(full_finaluses_labels_fn, finaluse_labels)
@@ -177,6 +184,8 @@ def main():
         tl.list_to_pickle_file(full_emission_labels_fn, emission_labels)
         tl.list_to_pickle_file(full_resource_labels_fn, resource_labels)
         tl.list_to_pickle_file(full_material_labels_fn, material_labels)
+
+        tl.list_to_pickle_file(full_extensions_labels_fn, extensions_labels)
 
         tl.list_to_csv_file(full_prd_unbalance_fn, unbalanced_prd, delimiter='\t')
         tl.list_to_csv_file(full_ind_unbalance_fn, unbalanced_ind, delimiter='\t')
