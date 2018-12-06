@@ -33,7 +33,6 @@
 ###############################################################################
 import numpy as np
 import os.path
-import csv
 import copy
 import pySUTtoIO.tools as tools
 
@@ -52,21 +51,21 @@ def main(directory, IO_tables):
 
     Z = IO_tables.io_transaction_matrix()
     Y = IO_tables.final_demand()
-    factor_inputs = IO_tables.factor_inputs_coefficients_matrix()
-    extensions = IO_tables.ext_coefficients_matrix()
-    indicators_dir = os.path.expand("data\\auxiliary\\indicators_v3.txt")
-    indicators = csv.reader(indicators_dir, delimiter='\t')
+    W = IO_tables.factor_inputs_transaction_matrix()
+    extensions = IO_tables.ext_transaction_matrix()
+    indicators_dir = "data\\auxiliary\\indicators_v3.txt"
+    indicators = tools.csv_file_to_list(indicators_dir, delimiter='\t')
+    H = tools.list_to_numpy_array(indicators, 0, 0)
+    print(H)
 
-    # CREATE NUMPY ARRAYS
-    W = tools.list_to_numpy_array(factor_inputs)
     va = np.sum(W[va_index, :], axis=0, keepdims=True)
-    E = tools.list_to_numpy_array(extensions[:417])
+    E = extensions[:417, :]
     E = E[ghg_index, :]  # select CO2, CH4 and N2O emissions
-    M = tools.list_to_numpy_array(extensions[418:])
+    M = extensions[418:, :]
+    print(M)
     M = M[material_index, :]  # "domestic extraction used" metals and minerals
     o_coeff = np.zeros((1, prd_cnt * cntr_cnt))  # dummy place holder
     M = np.vstack((o_coeff, W, E, M))  # stack all extensions
-    H = tools.list_to_numpy_array(indicators, 0, 0)
     M = np.dot(np.transpose(H), M)
 
     # CALCULATE TOTALS
@@ -117,12 +116,11 @@ def main(directory, IO_tables):
     del va
     del E
     del IO_tables
-    del factor_inputs
     del extensions
 
     # CREATE CANONICAL FILENAMES
     full_io_fn = os.path.join(directory, 'A_v4.npy')
-    full_leontief_fn = os.path.join(directory, 'L_v4npy')
+    full_leontief_fn = os.path.join(directory, 'L_v4.npy')
     full_finaldemand_fn = os.path.join(directory, 'Y_v4.npy')
     full_extensions_fn = os.path.join(directory, 'B_v4.npy')
 

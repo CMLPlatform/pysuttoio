@@ -57,10 +57,8 @@ def launch(or_sut_data_dir, model, save_dir, make_secondary, project=0):
     project = 0 (EXIOBASE), 1 (RaMa-SCENE)
 
     """
-    if save_dir != "":
-        directory = save_dir
-    else:
-        directory = os.path.expanduser("~\\Documents\\pySUTtoIO\\")
+    if save_dir == "":
+        save_dir = os.path.expanduser("~\\Documents\\pySUTtoIO\\")
 
     years = glob.glob(os.path.join(os.path.abspath(or_sut_data_dir), "*/"))
 
@@ -68,9 +66,9 @@ def launch(or_sut_data_dir, model, save_dir, make_secondary, project=0):
         yr_string = str(data_dir_yr[-5: -1])  # getting the name of the year
 
         if project == 0:
-            directory = os.path.join(directory, yr_string)
+            directory = os.path.join(save_dir, yr_string)
         elif project == 1:
-            directory = os.path.join(directory, "ramascene", yr_string)
+            directory = os.path.join(save_dir, "ramascene", yr_string)
 
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -91,12 +89,8 @@ def launch(or_sut_data_dir, model, save_dir, make_secondary, project=0):
             np.save(Y_file_name, IO_tables.final_demand())
             np.save(B_file_name, IO_tables.ext_coefficients_matrix())
             np.save(W_file_name, IO_tables.factor_inputs_coefficients_matrix())
-        elif project ==1:
-            ramascene = rama(IO_tables)
+
+        elif project == 1:
+            rama.main(directory, IO_tables)
 
 
-
-if __name__ == "__main__":
-    # or_sut_data_dir = input("Dataset location:\n")
-    or_sut_data_dir = "data\\clean\\msut"
-    launch(or_sut_data_dir, model, save_dir, make_secondary, project)
