@@ -36,7 +36,7 @@ def main(data_dir, model, make_secondary, project):
     # should add one for final demand emissions
 
     # CREATE PXP-ITA IOT
-    md_b = mb.TransformationModelB(sut, True)
+    md_b = mb.TransformationModelB(sut, make_secondary)
     # model_b = md_b.io_coefficient_matrix()
 
     # CHECK IO TABLE
@@ -92,5 +92,3 @@ def launch(or_sut_data_dir, model, save_dir, make_secondary, project=0):
 
         elif project == 1:
             rama.main(directory, IO_tables)
-
-

@@ -65,6 +65,7 @@ class TransformationModelB:
     def io_total_requirement_matrix(self):
         A = self.io_coefficient_matrix()
         identity = np.identity(len(A))
+        A = np.nan_to_num(A)
         return np.linalg.inv(identity - A)
 
     def check_io_transaction_matrix(self, rel_tol=default_rel_tol):
@@ -104,6 +105,8 @@ class TransformationModelB:
         while not it.finished and is_correct:
             if not math.isclose(e1[it.index], e2[it.index], rel_tol=rel_tol):
                 is_correct = False
+#                np.savetxt("e1", e1)
+#                np.savetxt("e2", e2)
             it.iternext()
         return is_correct
 

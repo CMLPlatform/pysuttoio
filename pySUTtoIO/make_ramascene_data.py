@@ -53,16 +53,15 @@ def main(directory, IO_tables):
     Y = IO_tables.final_demand()
     W = IO_tables.factor_inputs_transaction_matrix()
     extensions = IO_tables.ext_transaction_matrix()
-    indicators_dir = "data\\auxiliary\\indicators_v3.txt"
+    indicators_dir = "data/auxiliary/indicators_v3.txt"
     indicators = tools.csv_file_to_list(indicators_dir, delimiter='\t')
     H = tools.list_to_numpy_array(indicators, 0, 0)
-    print(H)
 
     va = np.sum(W[va_index, :], axis=0, keepdims=True)
     E = extensions[:417, :]
     E = E[ghg_index, :]  # select CO2, CH4 and N2O emissions
     M = extensions[418:, :]
-    print(M)
+
     M = M[material_index, :]  # "domestic extraction used" metals and minerals
     o_coeff = np.zeros((1, prd_cnt * cntr_cnt))  # dummy place holder
     M = np.vstack((o_coeff, W, E, M))  # stack all extensions
