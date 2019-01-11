@@ -18,13 +18,13 @@
 ###############################################################################
 import os.path
 import numpy as np
-import tools as tl
+import pySUTtoIO.tools as tl
 
 
 def main():
 
     # 1. SETUP
-    years = range(2010, 2012)
+    years = range(1995, 2012)
     raw_data_dir = os.path.join("data", "raw")
     clean_data_dir = os.path.join("data", "clean", "msut")
     value_added_index = [0, 1, 2, 3, 4, 5, 6, 7, 8]
@@ -137,6 +137,9 @@ def main():
             print('Warning: {0} unbalanced industry outputs and inputs found'.format(cnt))
 
         # 10. CREATE CANONICAL OUTPUT FILENAMES
+        if not os.path.exists(os.path.join(clean_data_dir, yr_string)):
+            os.makedirs(os.path.join(clean_data_dir, yr_string))
+
         full_supply_fn = os.path.join(clean_data_dir, yr_string, 'V.npy')
         full_use_fn = os.path.join(clean_data_dir, yr_string, 'U.npy')
         full_finaldemand_fn = os.path.join(clean_data_dir, yr_string, 'Y.npy')
