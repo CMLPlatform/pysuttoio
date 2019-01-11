@@ -80,7 +80,8 @@ def launch(or_sut_data_dir, model, save_dir, make_secondary, project=0):
         Y_file_name = os.path.join(directory, 'Y.npy')
         B_file_name = os.path.join(directory, 'B.npy')
         W_file_name = os.path.join(directory, 'W.npy')
-
+        
+        print('Reading multi-regional supply-use tables for year {} '.format(yr_string))
         IO_tables = main(data_dir_yr, model, make_secondary, project)
         # 11. SAVING MULTIREGIONAL DATA AS BINARY NUMPY ARRAY OBJECT
         if project == 0:
