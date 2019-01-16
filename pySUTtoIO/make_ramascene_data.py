@@ -117,14 +117,16 @@ def main(directory, IO_tables):
     del IO_tables
     del extensions
 
-    # CREATE CANONICAL FILENAMES
-    full_io_fn = os.path.join(directory, 'A_v4.npy')
-    full_leontief_fn = os.path.join(directory, 'L_v4.npy')
-    full_finaldemand_fn = os.path.join(directory, 'Y_v4.npy')
-    full_extensions_fn = os.path.join(directory, 'B_v4.npy')
-
-    # SAVING MULTIREGIONAL DATA AS BINARY NUMPY ARRAY OBJECTS
-    np.save(full_io_fn, A)
-    np.save(full_leontief_fn, L)
-    np.save(full_finaldemand_fn, Y)
-    np.save(full_extensions_fn, B)
+# =============================================================================
+#     # CREATE CANONICAL FILENAMES
+#     full_io_fn = os.path.join(directory, 'A_v4.npy')
+#     full_leontief_fn = os.path.join(directory, 'L_v4.npy')
+#     full_finaldemand_fn = os.path.join(directory, 'Y_v4.npy')
+#     full_extensions_fn = os.path.join(directory, 'B_v4.npy')
+#
+#     # SAVING MULTIREGIONAL DATA AS BINARY NUMPY ARRAY OBJECTS
+#     np.save(full_io_fn, A)
+#     np.save(full_leontief_fn, L)
+#     np.save(full_finaldemand_fn, Y)
+#     np.save(full_extensions_fn, B)
+# =============================================================================

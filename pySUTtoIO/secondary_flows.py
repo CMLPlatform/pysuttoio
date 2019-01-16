@@ -69,8 +69,8 @@ def make_secondary(data):
     V = moved["V"]
     U = moved["U"]
 
-    data["V"] = V
-    data["U"] = U
+    data.supply = V
+    data.use = U
 
     return(data)
 
@@ -112,29 +112,41 @@ def allocate_sec_mat(V, U, Y, prod_or, ind_or):
 
     # getting the value of secondary material from the supply table
     # which is placed on the primary material row
-    misplaced = np.array(V.iloc[prod_or, des_ind_col_pos])
+    misplaced = V[np.ix_(prod_or, des_ind_col_pos)]
 
     # placing the misplaced value to the secondary material row
-    V.iloc[des_prod_ix_pos, des_ind_col_pos] = misplaced
+    V[np.ix_(des_prod_ix_pos, des_ind_col_pos)] = misplaced
 
     # collecting how much of the primary material is consumed by final demand
     # to be subtracted from the supply value
-    Y_values = np.sum(Y.iloc[prod_or], axis=1)
+    Y_values = np.sum(Y[np.ix_(prod_or)], axis=1)
 
     # how the supply to intraindustry transactions is distributed in its use
-    dist = np.dot(np.diag(1/(np.sum(V.iloc[prod_or], axis=1)-Y_values)),
-                  U.iloc[prod_or])
+    V_values = np.diag(1/(np.sum(V[np.ix_(prod_or)], axis=1)-Y_values))
+    print(V_values[V_values == np.inf])
+    V_values[V_values == [np.inf, np.nan]] = 0
+    dist = np.dot(V_values, U[np.ix_(prod_or)])
+    dist[dist == [np.inf, np.nan]] = 0
+    print(dist[dist == np.inf])
 
     # mapping the use of the secondary material according to the distribution
     # of use of the primary material
-    U.iloc[des_prod_ix_pos] = np.diag(misplaced.sum(axis=1)) @ dist
+    print("misplace ", misplaced)
+    print("dist ", dist)
+    U[np.ix_(des_prod_ix_pos)] = np.diag(misplaced.sum(axis=1)) @ dist
 
     # subtracting the use of secondary material from the primary
-    U.iloc[prod_or] = np.subtract(U.iloc[prod_or],
-                                  np.array(U.iloc[des_prod_ix_pos]))
+    U[np.ix_(prod_or)] = np.subtract(U[np.ix_(prod_or)],
+                                     np.array(U[np.ix_(des_prod_ix_pos)]))
+    print(U[U == np.inf])
 
     # zeroing the misplaced value of secondary materials
-    V.iloc[prod_or, des_ind_col_pos] = 0
+    V[np.ix_(prod_or, des_ind_col_pos)] = 0
+    print(V[V == [np.inf, np.nan]])
+
+    print(U[np.ix_(des_prod_ix_pos)])
+
+    # print(U[np.ix_(des_prod_ix_pos)])
 
     # verifying balance
     g1_over_g2 = (np.sum(V, axis=1) / (np.sum(U, axis=1) +

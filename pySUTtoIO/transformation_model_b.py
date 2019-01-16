@@ -2,7 +2,7 @@ import math
 import numpy as np
 import pySUTtoIO.tools as tl
 import pySUTtoIO.sut as st
-from pySUTtoIO.secondary_flows import make_secondary
+from pySUTtoIO.secondary_flows import make_secondary as ms
 
 
 class TransformationModelB:
@@ -15,15 +15,15 @@ class TransformationModelB:
 
     default_rel_tol = 1E-3
 
-    def __init__(self, sut, make_seconary=False):
+    def __init__(self, sut, make_secondary):
         assert type(sut) is st.Sut
 
         self._sut = sut
 
         if make_secondary is True:
-            ms = make_secondary(sut)
-            self.V = ms["V"]
-            self.U = ms["U"]
+            sut2 = ms(sut)
+            self.V = sut2.supply
+            self.U = sut2.use
             self.q = np.sum(self.V, axis=1)
         else:
             self.V = self._sut.supply

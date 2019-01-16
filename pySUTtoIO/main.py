@@ -62,34 +62,34 @@ def launch(or_sut_data_dir, model, save_dir, make_secondary, project=0):
 
     years = glob.glob(os.path.join(os.path.abspath(or_sut_data_dir), "*/"))
 
-    for data_dir_yr in years:
-        yr_string = str(data_dir_yr[-5: -1])  # getting the name of the year
+    #for data_dir_yr in years:
+    yr_string = "2011" # str(data_dir_yr[-5: -1])  # getting the name of the year
 
-        if project == 0:
-            directory = os.path.join(save_dir, yr_string)
-        elif project == 1:
-            directory = os.path.join(save_dir, "ramascene", yr_string)
+    if project == 0:
+        directory = os.path.join(save_dir, yr_string)
+    elif project == 1:
+        directory = os.path.join(save_dir, "ramascene", yr_string)
 
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
-        # This is a quick fix. This is data only needed for RaMa-SCENE
-        # please update script to output everything
-        A_file_name = os.path.join(directory, 'A.npy')
-        L_file_name = os.path.join(directory, 'L.npy')
-        Y_file_name = os.path.join(directory, 'Y.npy')
-        B_file_name = os.path.join(directory, 'B.npy')
-        W_file_name = os.path.join(directory, 'W.npy')
-        
-        print('Reading multi-regional supply-use tables for year {} '.format(yr_string))
-        IO_tables = main(data_dir_yr, model, make_secondary, project)
-        # 11. SAVING MULTIREGIONAL DATA AS BINARY NUMPY ARRAY OBJECT
-        if project == 0:
-            np.save(A_file_name, IO_tables.io_coefficient_matrix())
-            np.save(L_file_name, IO_tables.io_total_requirement_matrix())
-            np.save(Y_file_name, IO_tables.final_demand())
-            np.save(B_file_name, IO_tables.ext_coefficients_matrix())
-            np.save(W_file_name, IO_tables.factor_inputs_coefficients_matrix())
+    # This is a quick fix. This is data only needed for RaMa-SCENE
+    # please update script to output everything
+    A_file_name = os.path.join(directory, 'A.npy')
+    L_file_name = os.path.join(directory, 'L.npy')
+    Y_file_name = os.path.join(directory, 'Y.npy')
+    B_file_name = os.path.join(directory, 'B.npy')
+    W_file_name = os.path.join(directory, 'W.npy')
 
-        elif project == 1:
-            rama.main(directory, IO_tables)
+    print('Reading multi-regional supply-use tables for year {} '.format(yr_string))
+    IO_tables = main(os.path.join(os.path.abspath(or_sut_data_dir), "2011"), model, make_secondary, project)
+    # 11. SAVING MULTIREGIONAL DATA AS BINARY NUMPY ARRAY OBJECT
+    if project == 0:
+        np.save(A_file_name, IO_tables.io_coefficient_matrix())
+        np.save(L_file_name, IO_tables.io_total_requirement_matrix())
+        np.save(Y_file_name, IO_tables.final_demand())
+        np.save(B_file_name, IO_tables.ext_coefficients_matrix())
+        np.save(W_file_name, IO_tables.factor_inputs_coefficients_matrix())
+
+    elif project == 1:
+        rama.main(directory, IO_tables)
