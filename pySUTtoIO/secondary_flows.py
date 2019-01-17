@@ -119,41 +119,70 @@ def allocate_sec_mat(V, U, Y, prod_or, ind_or):
 
     # collecting how much of the primary material is consumed by final demand
     # to be subtracted from the supply value
-    Y_values = np.sum(Y[np.ix_(prod_or)], axis=1)
 
-    # how the supply to intraindustry transactions is distributed in its use
-    V_values = np.diag(1/(np.sum(V[np.ix_(prod_or)], axis=1)-Y_values))
-    print(V_values[V_values == np.inf])
-    V_values[V_values == [np.inf, np.nan]] = 0
-    dist = np.dot(V_values, U[np.ix_(prod_or)])
-    dist[dist == [np.inf, np.nan]] = 0
-    print(dist[dist == np.inf])
+    prim_sec_supply_trans = V[np.ix_(prod_or)]
 
-    # mapping the use of the secondary material according to the distribution
-    # of use of the primary material
-    print("misplace ", misplaced)
-    print("dist ", dist)
-    U[np.ix_(des_prod_ix_pos)] = np.diag(misplaced.sum(axis=1)) @ dist
+    prim_sec_tot_output = np.sum(prim_sec_supply_trans)
 
-    # subtracting the use of secondary material from the primary
-    U[np.ix_(prod_or)] = np.subtract(U[np.ix_(prod_or)],
-                                     np.array(U[np.ix_(des_prod_ix_pos)]))
-    print(U[U == np.inf])
+    sec_supply_trans = V[np.ix_(des_prod_ix_pos, des_ind_col_pos)]
 
-    # zeroing the misplaced value of secondary materials
-    V[np.ix_(prod_or, des_ind_col_pos)] = 0
-    print(V[V == [np.inf, np.nan]])
+    sec_output = np.sum(sec_supply_trans, axis=1)
 
-    print(U[np.ix_(des_prod_ix_pos)])
+    ratio_prim_sec = np.diag(np.divide(sec_output, prim_sec_tot_output))
 
-    # print(U[np.ix_(des_prod_ix_pos)])
+    ratio_prim_sec[ratio_prim_sec == [np.nan, np.inf]] = 0
 
-    # verifying balance
-    g1_over_g2 = (np.sum(V, axis=1) / (np.sum(U, axis=1) +
-                                       np.sum(Y, axis=1))) * 100
+    prim_sec_use_trans = U[np.ix_(prod_or)]
+
+    prim_sec_fin_dem_trans = Y[np.ix_(prod_or)]
+
+    eye = np.identity(len(ratio_prim_sec))
+
+    U[np.ix_(prod_or)] = (eye - ratio_prim_sec) @ prim_sec_use_trans
+
+    U[np.ix_(des_prod_ix_pos)] = ratio_prim_sec @ prim_sec_use_trans
+
+    Y[np.ix_(prod_or)] = ( eye - ratio_prim_sec) @ prim_sec_fin_dem_trans
+
+    Y[np.ix_(des_prod_ix_pos)] = ratio_prim_sec @ prim_sec_fin_dem_trans
+
+# =============================================================================
+#     # how the supply to intraindustry transactions is distributed in its use
+#     V_values = np.diag(1/(np.sum(V[np.ix_(prod_or)], axis=1)-Y_values))
+#     print(V_values[V_values == np.inf])
+#     V_values[V_values == [np.inf, np.nan]] = 0
+#     dist = np.dot(V_values, U[np.ix_(prod_or)])
+#     dist[dist == [np.inf, np.nan]] = 0
+#     print(dist[dist == np.inf])
+#
+#     # mapping the use of the secondary material according to the distribution
+#     # of use of the primary material
+#     print("misplace ", misplaced)
+#     print("dist ", dist)
+#     U[np.ix_(des_prod_ix_pos)] = np.diag(misplaced.sum(axis=1)) @ dist
+#
+#     # subtracting the use of secondary material from the primary
+#     U[np.ix_(prod_or)] = np.subtract(U[np.ix_(prod_or)],
+#                                      np.array(U[np.ix_(des_prod_ix_pos)]))
+#     print(U[U == np.inf])
+#
+#     # zeroing the misplaced value of secondary materials
+#     V[np.ix_(prod_or, des_ind_col_pos)] = 0
+#     print(V[V == [np.inf, np.nan]])
+#
+#     print(U[np.ix_(des_prod_ix_pos)])
+#
+#     # print(U[np.ix_(des_prod_ix_pos)])
+#
+#     # verifying balance
+# =============================================================================
+    g1_over_g2 = np.nan_to_num((np.sum(V, axis=1) / (np.sum(U, axis=1) + np.sum(Y, axis=1))) * 100)
+
+    print(g1_over_g2[g1_over_g2 != [0,100]])
 
     output = {"V": V,
               "U": U,
+              "Y": Y,
               "balance": g1_over_g2}
 
     return(output)
