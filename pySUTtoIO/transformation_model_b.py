@@ -25,10 +25,13 @@ class TransformationModelB:
             self.V = sut2.supply
             self.U = sut2.use
             self.q = np.sum(self.V, axis=1)
+            self.Y = sut2.final_use
+
         else:
             self.V = self._sut.supply
             self.U = self._sut.use
             self.q = self._sut.total_product_supply
+            self.Y = self._sut.final_use
 
     def transformation_matrix(self):
         make = np.transpose(self.V)
@@ -47,19 +50,19 @@ class TransformationModelB:
         return np.dot(self._sut.extensions, self.transformation_matrix())
 
     def ext_coefficients_matrix(self):
-        q = self._sut.total_product_supply
+        q = self.q
         return np.dot(self.ext_transaction_matrix(), tl.invdiag(q))
 
     def factor_inputs_transaction_matrix(self):
         return np.dot(self._sut.factor_inputs, self.transformation_matrix())
 
     def factor_inputs_coefficients_matrix(self):
-        q = self._sut.total_product_supply
+        q = self.q
         return np.dot(self.factor_inputs_transaction_matrix(), tl.invdiag(q))
 
     def final_demand(self, fd=None):
         if fd is None:
-            fd = self._sut.final_use
+            fd = self.Y
         return fd
 
     def io_total_requirement_matrix(self):
@@ -71,9 +74,11 @@ class TransformationModelB:
     def check_io_transaction_matrix(self, rel_tol=default_rel_tol):
         is_correct = True
         q1 = np.sum(self.io_transaction_matrix(), axis=1) + \
-            np.sum(self._sut.final_use, axis=1)
+            np.sum(self.Y, axis=1)
+        np.savetxt("q1.txt", q1)
         q2 = np.sum(self.U, axis=1) + \
-            np.sum(self._sut.final_use, axis=1)
+            np.sum(self.Y, axis=1)
+        np.savetxt("q2.txt", q2)
         it = np.nditer(q1, flags=['f_index'])
         while not it.finished and is_correct:
             if not math.isclose(q1[it.index], q2[it.index], rel_tol=rel_tol):
@@ -84,11 +89,11 @@ class TransformationModelB:
     def check_io_coefficients_matrix(self, rel_tol=default_rel_tol):
         is_correct = True
         q1 = np.sum(self.io_transaction_matrix(), axis=1) + \
-            np.sum(self._sut.final_use, axis=1)
+            np.sum(self.Y, axis=1)
         (row_cnt, col_cnt) = self.U.shape
         eye = np.diag(np.ones(row_cnt))
         l_inverse = np.linalg.inv(eye - self.io_coefficient_matrix())
-        fd = np.sum(self._sut.final_use, axis=1)
+        fd = np.sum(self.Y, axis=1)
         q2 = np.dot(l_inverse, fd)
         it = np.nditer(q1, flags=['f_index'])
         while not it.finished and is_correct:
@@ -117,7 +122,7 @@ class TransformationModelB:
         (row_cnt, col_cnt) = self.U.shape
         eye = np.diag(np.ones(row_cnt))
         l_inverse = np.linalg.inv(eye - self.io_coefficient_matrix())
-        fd = np.sum(self._sut.final_use, axis=1)
+        fd = np.sum(self.Y, axis=1)
         e2 = np.dot(ext, np.dot(l_inverse, fd))
         it = np.nditer(e1, flags=['f_index'])
         while not it.finished and is_correct:

@@ -6,7 +6,7 @@ import pySUTtoIO.transformation_model_b as mb
 import pySUTtoIO.make_ramascene_data as rama
 
 
-def main(data_dir, model, make_secondary, project):
+def main(data_dir, model, make_secondary):
     """"
     added model so that this module can be use as interface to call the
     specific model types
@@ -82,7 +82,7 @@ def launch(or_sut_data_dir, model, save_dir, make_secondary, project=0):
     W_file_name = os.path.join(directory, 'W.npy')
 
     print('Reading multi-regional supply-use tables for year {} '.format(yr_string))
-    IO_tables = main(os.path.join(os.path.abspath(or_sut_data_dir), "2011"), model, make_secondary, project)
+    IO_tables = main(os.path.join(os.path.abspath(or_sut_data_dir), "2011"), model, make_secondary)
     # 11. SAVING MULTIREGIONAL DATA AS BINARY NUMPY ARRAY OBJECT
     if project == 0:
         np.save(A_file_name, IO_tables.io_coefficient_matrix())

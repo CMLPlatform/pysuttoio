@@ -83,7 +83,6 @@ def main(directory, IO_tables):
     # LEONTIEF INVERSE
     I = np.eye(prd_cnt * cntr_cnt)     # unity matrix ($)
     L = np.linalg.inv(I - A)           # Leontief inverse matrix ($/$)
-    L[L < 0] = 0
 
     # CHECK
     # balanced to start with ?
