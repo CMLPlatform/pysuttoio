@@ -24,6 +24,7 @@ class TransformationModelB:
             sut2 = ms(sut)
             self.V = sut2.supply
             self.U = sut2.use
+            np.savetxt("use.csv", self.U)
             self.q = np.sum(self.V, axis=1)
             self.Y = sut2.final_use
 
@@ -35,8 +36,13 @@ class TransformationModelB:
 
     def transformation_matrix(self):
         make = np.transpose(self.V)
-        g = self._sut.total_industry_output
-        return np.dot(tl.invdiag(g), make)
+        g_orig = self._sut.total_industry_output
+        g1 = np.sum(self.V, axis=0)
+        g2 = np.sum(self.U, axis=0) + np.sum(self._sut.value_added, axis=0)
+        np.savetxt("g1.txt", g1)
+        np.savetxt("g2.txt", g2)
+        np.savetxt("g_orig.txt", g_orig)
+        return np.dot(tl.invdiag(g_orig), make)
 
     def io_transaction_matrix(self):
         use = self.U
@@ -73,6 +79,8 @@ class TransformationModelB:
 
     def check_io_transaction_matrix(self, rel_tol=default_rel_tol):
         is_correct = True
+        q_orig = np.sum(self.V, axis=1)
+        np.savetxt("q_orig.txt", q_orig)
         q1 = np.sum(self.io_transaction_matrix(), axis=1) + \
             np.sum(self.Y, axis=1)
         np.savetxt("q1.txt", q1)
