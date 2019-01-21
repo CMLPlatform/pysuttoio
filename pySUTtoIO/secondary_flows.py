@@ -122,17 +122,29 @@ def allocate_sec_mat(V, U, Y, prod_or, ind_or):
     # collecting how much of the primary material is consumed by final demand
     # to be subtracted from the supply value
 
+    # matrix  of primary sectors x all products (588 x 7987)
     prim_sec_supply_trans = V[np.ix_(prod_or)]
 
-    prim_sec_tot_output = np.sum(prim_sec_supply_trans)
+    # scalar value of sum total primary industry supply
+    # prim_sec_tot_output = np.sum(prim_sec_supply_trans)
+    prim_sec_tot_output = np.sum(prim_sec_supply_trans, axis=1)
 
+    # matrix of secondary product supply by secondary industry (588 x 588)
     sec_supply_trans = V[np.ix_(des_prod_ix_pos, des_ind_col_pos)]
 
+    # vector of total secondary industry output (588)
     sec_output = np.sum(sec_supply_trans, axis=1)
 
-    ratio_prim_sec = np.diag(np.divide(sec_output, prim_sec_tot_output))
+    # vector of ratios between secondary output per industry and sum total
+    # industry supply (diagonalised 588  x 588)
+    ratio_prim_sec = np.zeros((len(sec_output)))
+    for idx in range(0, len(sec_output)):
+        if prim_sec_tot_output[idx] != 0:
+            ratio_prim_sec[idx] = sec_output[idx] / prim_sec_tot_output[idx]
+    ratio_prim_sec = np.diag(ratio_prim_sec)
 
-    ratio_prim_sec[ratio_prim_sec == [np.nan, np.inf]] = 0
+    # ratio_prim_sec = np.diag(np.divide(sec_output, prim_sec_tot_output))
+    # ratio_prim_sec[ratio_prim_sec == [np.nan, np.inf]] = 0
 
     prim_sec_use_trans = U[np.ix_(prod_or)]
 
@@ -154,4 +166,6 @@ def allocate_sec_mat(V, U, Y, prod_or, ind_or):
               "U": U,
               "Y": Y}
 
-    return(output)
+    print('splitting off secondary materials ready')
+
+    return output
