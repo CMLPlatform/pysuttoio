@@ -48,10 +48,10 @@ class TransformationModelB:
             full_ind_input_fn = os.path.join(self.debug_data_dir, 'industry_input_new.txt')
             full_ind_output_fn = os.path.join(self.debug_data_dir, 'industry_output_new.txt')
 
-            # tl.list_to_csv_file(full_supply_fn, self.V, '\t')
+            tl.list_to_csv_file(full_supply_fn, self.V, '\t')
             tl.list_to_csv_file(full_use_fn, self.U, '\t')
-            # tl.list_to_csv_file(full_finaldemand_fn, self.Y, '\t')
-            # tl.list_to_csv_file(full_value_added_fn, self._sut.value_added, '\t') # notice value added not touched
+            tl.list_to_csv_file(full_finaldemand_fn, self.Y, '\t')
+            tl.list_to_csv_file(full_value_added_fn, self._sut.value_added, '\t') # notice value added not touched
             tl.list_to_csv_file(full_prd_supply_fn, product_out, '\t')
             tl.list_to_csv_file(full_prd_use_fn, product_in, '\t')
             tl.list_to_csv_file(full_ind_output_fn, np.transpose(industry_out), '\t')

@@ -101,13 +101,13 @@ def main(directory, IO_tables):
                   .format(tolerance, diff[index], index))
 
     # AGGREGATE FINALDEMAND
-#    Y_new = np.zeros([9800, 49])
-#    for cntr_idx in range(0, cntr_cnt):
-#        for fd_idx in range(0, fd_cnt):
-#            old_idx = cntr_idx * fd_cnt + fd_idx
-#            new_idx = cntr_idx
-#            Y_new[:, new_idx] = Y_new[:, new_idx] + Y[:, old_idx]
-#    Y = Y_new
+    Y_new = np.zeros([9800, 49])
+    for cntr_idx in range(0, cntr_cnt):
+        for fd_idx in range(0, fd_cnt):
+            old_idx = cntr_idx * fd_cnt + fd_idx
+            new_idx = cntr_idx
+            Y_new[:, new_idx] = Y_new[:, new_idx] + Y[:, old_idx]
+    Y = Y_new
 
     # SOME DELETING
     del Z
@@ -124,7 +124,7 @@ def main(directory, IO_tables):
     full_extensions_fn = os.path.join(directory, 'B_v4.npy')
 
     # SAVING MULTIREGIONAL DATA AS BINARY NUMPY ARRAY OBJECTS
-#    np.save(full_io_fn, A)
-#    np.save(full_leontief_fn, L)
+    np.save(full_io_fn, A)
+    np.save(full_leontief_fn, L)
     np.save(full_finaldemand_fn, Y)
-#    np.save(full_extensions_fn, B)
+    np.save(full_extensions_fn, B)
